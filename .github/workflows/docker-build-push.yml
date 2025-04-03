@@ -20,9 +20,12 @@ jobs:
         run: |
           # Find all Dockerfiles in non-hidden directories
           find . -type f \( -name "*.Dockerfile" -o -name "Dockerfile" \) \
-            | grep -v '/\.[^/]*/' > dockerfiles.txt
+          | grep -v '/\.[^/]*/' > dockerfiles.txt
 
-          # 生成符合矩阵要求的JSON
+          echo "Discovered files:"
+          cat dockerfiles.txt
+
+          # Generate JSON that meets the matrix requirements
           jq -Rn '[inputs | select(. != "")]' < dockerfiles.txt > matrix.json
           echo "matrix={\"file\":$(cat matrix.json)}" >> $GITHUB_OUTPUT
 
