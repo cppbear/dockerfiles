@@ -2,19 +2,18 @@ FROM archlinux:base-devel
 
 ARG USERNAME=arch
 
-RUN echo 'Server = https://mirror.nju.edu.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
-    && sed -i 's/^#Color/Color/' /etc/pacman.conf \
-    && echo '[archlinuxcn]' >> /etc/pacman.conf \
-    && echo 'Server = https://mirrors.cernet.edu.cn/archlinuxcn/$arch' >> /etc/pacman.conf \
+RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
     && pacman-key --init && pacman-key --populate archlinux \
-    && pacman -Syu --noconfirm archlinuxcn-keyring && pacman-key --populate archlinuxcn \
-    && pacman -Syu --noconfirm --needed \
-    sudo paru pacman-contrib \
+    && pacman -Syy --noconfirm archlinux-keyring ca-certificates \
+    && echo 'Server = https://arch-archive.tuna.tsinghua.edu.cn/2024/03-04/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
+    && pacman -Syyuu --noconfirm \
+    && pacman -Syy --noconfirm --needed \
+    git cmake ninja llvm clang lld z3 \
+    vim sudo pacman-contrib \
     zsh zsh-autosuggestions zsh-syntax-highlighting \
     && pacman -Scc --noconfirm \
     && paccache -rk0 \
     && rm -rf /var/cache/pacman/pkg/* \
-    && sed -i 's/^#BottomUp/BottomUp/' /etc/paru.conf \
     && useradd -m -G wheel $USERNAME -s /usr/bin/zsh \
     && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
