@@ -26,7 +26,7 @@ jobs:
           cat dockerfiles.txt
 
           # Generate JSON that meets the matrix requirements
-          jq -Rn '[inputs | select(. != "")]' < dockerfiles.txt > matrix.json
+          jq -c -Rn '[inputs | select(. != "")]' < dockerfiles.txt > matrix.json
           echo "matrix={\"file\":$(cat matrix.json)}" >> $GITHUB_OUTPUT
 
   build-push:
