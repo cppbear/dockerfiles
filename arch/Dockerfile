@@ -21,7 +21,8 @@ RUN echo 'Server = https://mirror.nju.edu.cn/archlinux/$repo/os/$arch' > /etc/pa
     && rm -rf /var/cache/pacman/pkg/* \
     && sed -i 's/^#BottomUp/BottomUp/' /etc/paru.conf \
     && useradd -m -G wheel $USERNAME -s /usr/bin/zsh \
-    && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
 
 USER $USERNAME
 WORKDIR /home/$USERNAME

@@ -19,7 +19,8 @@ RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
     && paccache -rk0 \
     && rm -rf /var/cache/pacman/pkg/* \
     && useradd -m -G wheel $USERNAME -s /usr/bin/zsh \
-    && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+    && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
 
 USER $USERNAME
 WORKDIR /home/$USERNAME
