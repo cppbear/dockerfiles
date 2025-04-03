@@ -5,7 +5,7 @@ ARG USERNAME=arch
 RUN echo 'Server = https://mirror.nju.edu.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
     && sed -i 's/^#Color/Color/' /etc/pacman.conf \
     && echo '[archlinuxcn]' >> /etc/pacman.conf \
-    && echo 'Server = https://mirrors.cernet.edu.cn/archlinuxcn/$arch' >> /etc/pacman.conf \
+    && echo 'Server = https://mirror.nju.edu.cn/archlinuxcn/$arch' >> /etc/pacman.conf \
     && pacman-key --init && pacman-key --populate archlinux \
     && pacman -Syu --noconfirm archlinuxcn-keyring && pacman-key --populate archlinuxcn \
     && pacman -Syu --noconfirm --needed \
