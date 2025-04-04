@@ -16,7 +16,7 @@ RUN sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.nju.edu.cn/ubuntu|g
     zsh zsh-autosuggestions zsh-syntax-highlighting \
     && rm -rf /var/lib/apt/lists/* \
     && if id "$USERNAME" &>/dev/null; then \
-    usermod -s /usr/bin/zsh -aG sudo "$USERNAME"; \
+    usermod -s /usr/bin/zsh "$USERNAME"; \
     else \
     useradd -m -s /usr/bin/zsh -G sudo "$USERNAME"; \
     fi \
