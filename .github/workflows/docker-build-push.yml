@@ -65,9 +65,8 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-${{ matrix.platforms }}-${{ github.sha }}
+          key: buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-${{ github.sha }}
           restore-keys: |
-            buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-${{ matrix.platforms }}-
             buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-
             buildx-${{ runner.os }}-
 
