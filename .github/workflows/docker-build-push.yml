@@ -22,12 +22,31 @@ jobs:
           find . -type f \( -name "*.Dockerfile" -o -name "Dockerfile" \) \
           | grep -v '/\.[^/]*/' > dockerfiles.txt
 
-          echo "Discovered files:"
-          cat dockerfiles.txt
+          # Generate platform matrix
+          echo "[" > matrix.json
+          while IFS= read -r file; do
+            dir=$(dirname "$file")
+            platforms="linux/amd64"
 
-          # Generate JSON that meets the matrix requirements
-          jq -c -Rn '[inputs | select(. != "")]' < dockerfiles.txt > matrix.json
-          echo "matrix={\"file\":$(cat matrix.json)}" >> $GITHUB_OUTPUT
+            # Check for .platform file
+            if [ -f "$dir/.platform" ]; then
+              platforms=$(grep -vE '^(#|$)' "$dir/.platform" | tr '\n' ',' | sed 's/,*$//')
+              [ -z "$platforms" ] && platforms="linux/amd64"
+            fi
+
+            # Generate JSON entry
+            jq -n \
+              --arg file "$file" \
+              --arg platforms "$platforms" \
+              '{file: $file, platforms: $platforms}' >> matrix.json
+            echo "," >> matrix.json
+          done < dockerfiles.txt
+
+          # Fix JSON format
+          sed -i '$d' matrix.json  # Remove trailing comma
+          echo "]" >> matrix.json
+          jq -c 'map(select(.file != null))' matrix.json > matrix-clean.json
+          echo "matrix={\"include\":$(cat matrix-clean.json)}" >> $GITHUB_OUTPUT
 
   build-push:
     needs: discover
@@ -40,12 +59,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
+        with:
+          platforms: ${{ matrix.platforms }}
 
       - uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-${{ github.sha }}
+          key: buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-${{ matrix.platforms }}-${{ github.sha }}
           restore-keys: |
+            buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-${{ matrix.platforms }}-
             buildx-${{ runner.os }}-${{ hashFiles(matrix.file) }}-
             buildx-${{ runner.os }}-
 
@@ -64,10 +86,11 @@ jobs:
           tag=$(basename "$file" | sed 's/\.[^.]*$//; s/Dockerfile/latest/; s/[^a-zA-Z0-9_.-]/-/g')
 
           docker buildx build \
+            --platform ${{ matrix.platforms }} \
             --cache-from type=local,src=/tmp/.buildx-cache \
             --cache-to type=local,dest=/tmp/.buildx-cache \
             -f "$file" \
             -t "$DOCKERHUB_USER/$repo_name:$tag" \
             --push \
             "$dir_path"
-          echo "Docker image $DOCKERHUB_USER/$repo_name:$tag built and pushed successfully."
+          echo "Docker image $DOCKERHUB_USER/$repo_name:$tag (${{ matrix.platforms }}) built and pushed successfully."
