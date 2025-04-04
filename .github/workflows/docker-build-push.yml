@@ -59,11 +59,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup week number
-        id: week
-        run: |
-          echo "week=$(date +'%V')" >> $GITHUB_OUTPUT
-
       - name: Generate image metadata
         id: tags
         run: |
