@@ -5,9 +5,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 
 RUN if echo "$TARGETARCH" | grep -q "arm"; then \
-    sed -i '0,/http:\/\/ports.ubuntu.com\/ubuntu-ports/s||http://mirror.nju.edu.cn/ubuntu-ports|' /etc/apt/sources.list.d/ubuntu.sources; \
+    sed -i.bak '0,/http:\/\/ports.ubuntu.com\/ubuntu-ports/s||http://mirror.nju.edu.cn/ubuntu-ports|' /etc/apt/sources.list.d/ubuntu.sources; \
     else \
-    sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.nju.edu.cn/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources; \
+    sed -i.bak 's|http://archive.ubuntu.com/ubuntu|http://mirror.nju.edu.cn/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources; \
     fi \
     && apt update -y && apt upgrade -y \
     && apt install -y ca-certificates \

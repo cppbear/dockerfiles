@@ -5,6 +5,7 @@ ARG USERNAME=arch
 RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
     && pacman-key --init && pacman-key --populate archlinux \
     && pacman -Syy --noconfirm archlinux-keyring ca-certificates \
+    && mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak \
     && echo 'Server = https://arch-archive.tuna.tsinghua.edu.cn/2024/03-04/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
     && echo 'NoExtract = !usr/share/help/zh* !*locale*/zh*/* !usr/share/*locales/zh_??' >> /etc/pacman.conf \
     && pacman -Syyuu --noconfirm glibc \

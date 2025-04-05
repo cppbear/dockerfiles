@@ -2,7 +2,8 @@ FROM archlinux:base-devel
 
 ARG USERNAME=arch
 
-RUN echo 'Server = https://mirror.nju.edu.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
+RUN mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak \
+    && echo 'Server = https://mirror.nju.edu.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
     && sed -i 's/^#Color/Color/' /etc/pacman.conf \
     && echo 'NoExtract = !usr/share/help/zh* !*locale*/zh*/* !usr/share/*locales/zh_??' >> /etc/pacman.conf \
     && echo '[archlinuxcn]' >> /etc/pacman.conf \
