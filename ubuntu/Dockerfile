@@ -13,7 +13,7 @@ RUN if echo "$TARGETARCH" | grep -q "arm"; then \
     fi \
     && apt update -y && apt upgrade -y \
     && apt install -y ca-certificates \
-    && sed -i 's|http://mirror.nju.edu.cn/ubuntu|https://mirror.nju.edu.cn/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources \
+    && sed -i 's|http://mirror.nju.edu.cn|https://mirror.nju.edu.cn|g' /etc/apt/sources.list.d/ubuntu.sources \
     # Set locale
     && apt install -y locales \
     && sed -i '/en_US.UTF-8/s/^#//g' /etc/locale.gen \
