@@ -29,7 +29,7 @@ RUN if echo "$TARGETARCH" | grep -q "arm"; then \
     zsh zsh-autosuggestions zsh-syntax-highlighting \
     && rm -rf /var/lib/apt/lists/* \
     # Set up user
-    && if id "$USERNAME" &>/dev/null; then \
+    && if id "$USERNAME" >/dev/null 2>&1; then \
     usermod -s /usr/bin/zsh "$USERNAME"; \
     else \
     useradd -m -s /usr/bin/zsh -G sudo "$USERNAME"; \
