@@ -1,15 +1,23 @@
 FROM archlinux:base-devel
 
 ARG USERNAME=arch
+ARG USEMIRROR=0
 
 ENV TZ=Asia/Shanghai
 
+COPY set-mirror-llvm16.sh /usr/local/sbin/set-mirror
+
 RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
+    && echo 'NoExtract = !usr/share/help/zh* !*locale*/zh*/* !usr/share/*locales/zh_??' >> /etc/pacman.conf \
     && pacman-key --init && pacman-key --populate archlinux \
     && pacman -Syy --noconfirm archlinux-keyring ca-certificates \
     && mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak \
-    && echo 'Server = https://arch-archive.tuna.tsinghua.edu.cn/2024/03-04/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
-    && echo 'NoExtract = !usr/share/help/zh* !*locale*/zh*/* !usr/share/*locales/zh_??' >> /etc/pacman.conf \
+    && if [ "$USEMIRROR" = "1" ]; then \
+        rm -rf /usr/local/sbin/set-mirror \
+        && echo 'Server = https://arch-archive.tuna.tsinghua.edu.cn/2024/03-04/$repo/os/$arch' > /etc/pacman.d/mirrorlist; \
+    else \
+        echo 'Server = https://archive.archlinux.org/repos/2024/03/07/$repo/os/$arch' > /etc/pacman.d/mirrorlist; \
+    fi \
     # Set locale
     && pacman -Syyuu --noconfirm glibc \
     && sed -i '/en_US.UTF-8/s/^#//g' /etc/locale.gen \

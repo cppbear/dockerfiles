@@ -2,9 +2,10 @@
 set -eo pipefail
 
 # Configuration parameters
-DOCKERHUB_USER=""             # Default DockerHub username (empty)
-REPO_SUFFIX="dev"             # Image suffix
-LOG_DIR="build-logs"   # Log directory
+DOCKERHUB_USER=""         # Default DockerHub username (empty)
+REPO_SUFFIX="dev"         # Image suffix
+LOG_DIR="build-logs"      # Log directory
+USE_MIRROR="0"              # Use mirror (0: no, 1: yes)
 
 # Help message
 show_help() {
@@ -16,6 +17,7 @@ show_help() {
   echo "  -u, --user     Set DockerHub username"
   echo "  -s, --suffix   Set image suffix (default: $REPO_SUFFIX)"
   echo "  -l, --logs     Set log directory (default: $LOG_DIR)"
+  echo "  -m, --mirror   Set whether to use mirror (default: $USE_MIRROR)"
   echo
   echo "Arguments:"
   echo "  PATH           Dockerfile path or directory (default: auto-discover)"
@@ -39,6 +41,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -l|--logs)
       LOG_DIR="$2"
+      shift; shift
+      ;;
+    -m|--mirror)
+      USE_MIRROR="$2"
       shift; shift
       ;;
     -*)
@@ -133,10 +139,22 @@ build_image() {
   echo "Log file:  $log_file"
 
   # Execute build and log output
-  docker build \
-    --file "$dockerfile" \
-    --tag "$image_name" \
-    "$context_dir" 2>&1 | tee "$log_file"
+  if [[ $USE_MIRROR = "1" ]]; then
+    # Build with mirror
+    echo "Using mirror..."
+    docker build \
+      --build-arg USEMIRROR=1 \
+      --file "$dockerfile" \
+      --tag "$image_name" \
+      "$context_dir" 2>&1 | tee "$log_file"
+  else
+    # Build without mirror
+    echo "Not using mirror..."
+    docker build \
+      --file "$dockerfile" \
+      --tag "$image_name" \
+      "$context_dir" 2>&1 | tee "$log_file"
+  fi
 }
 
 # Main build loop

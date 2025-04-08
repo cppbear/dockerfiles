@@ -3,17 +3,25 @@ FROM ubuntu:latest
 ARG USERNAME=ubuntu
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
+ARG USEMIRROR=0
 
 ENV TZ=Asia/Shanghai
 
-RUN if echo "$TARGETARCH" | grep -q "arm"; then \
-    sed -i.bak '0,/http:\/\/ports.ubuntu.com\/ubuntu-ports/s||http://mirror.nju.edu.cn/ubuntu-ports|' /etc/apt/sources.list.d/ubuntu.sources; \
-    else \
-    sed -i.bak 's|http://archive.ubuntu.com/ubuntu|http://mirror.nju.edu.cn/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources; \
+COPY set-mirror.sh /usr/local/sbin/set-mirror
+
+RUN if [ "$USEMIRROR" = "1" ]; then \
+        rm -rf /usr/local/sbin/set-mirror \
+        && if echo "$TARGETARCH" | grep -q "arm"; then \
+            sed -i.bak '0,/http:\/\/ports.ubuntu.com\/ubuntu-ports/s||http://mirror.nju.edu.cn/ubuntu-ports|' /etc/apt/sources.list.d/ubuntu.sources; \
+        else \
+            sed -i.bak 's|http://archive.ubuntu.com/ubuntu|http://mirror.nju.edu.cn/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources; \
+        fi \
     fi \
     && apt update -y && apt upgrade -y \
     && apt install -y ca-certificates \
-    && sed -i 's|http://mirror.nju.edu.cn|https://mirror.nju.edu.cn|g' /etc/apt/sources.list.d/ubuntu.sources \
+    && if [ "$USEMIRROR" = "1" ]; then \
+    sed -i 's|http://mirror.nju.edu.cn|https://mirror.nju.edu.cn|g' /etc/apt/sources.list.d/ubuntu.sources; \
+    fi \
     # Set locale
     && apt install -y locales \
     && sed -i '/en_US.UTF-8/s/^#//g' /etc/locale.gen \

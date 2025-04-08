@@ -1,14 +1,20 @@
 FROM fedora:latest
 
 ARG USERNAME=fedora
+ARG USEMIRROR=0
 
 ENV TZ=Asia/Shanghai
 
-RUN sed -e 's|^metalink=|#metalink=|g' \
-    -e 's|^#baseurl=http://download.example/pub/fedora/linux|baseurl=https://mirror.nju.edu.cn/fedora|g' \
-    -i.bak \
-    /etc/yum.repos.d/fedora.repo \
-    /etc/yum.repos.d/fedora-updates.repo \
+COPY set-mirror.sh /usr/local/sbin/set-mirror
+
+RUN if [ "$USEMIRROR" = "1" ]; then \
+        rm -rf /usr/local/sbin/set-mirror \
+        && sed -e 's|^metalink=|#metalink=|g' \
+        -e 's|^#baseurl=http://download.example/pub/fedora/linux|baseurl=https://mirror.nju.edu.cn/fedora|g' \
+        -i.bak \
+        /etc/yum.repos.d/fedora.repo \
+        /etc/yum.repos.d/fedora-updates.repo; \
+    fi \
     && dnf makecache && dnf upgrade -y \
     # Set locale
     && dnf install -y glibc-langpack-zh glibc-langpack-en \

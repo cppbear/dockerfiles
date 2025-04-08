@@ -1,17 +1,23 @@
 FROM archlinux:base-devel
 
 ARG USERNAME=arch
+ARG USEMIRROR=0
 
 ENV TZ=Asia/Shanghai
 
-RUN mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak \
-    && echo 'Server = https://mirror.nju.edu.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
-    && sed -i 's/^#Color/Color/' /etc/pacman.conf \
+COPY set-mirror.sh /usr/local/sbin/set-mirror
+
+RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
     && echo 'NoExtract = !usr/share/help/zh* !*locale*/zh*/* !usr/share/*locales/zh_??' >> /etc/pacman.conf \
-    && echo '[archlinuxcn]' >> /etc/pacman.conf \
-    && echo 'Server = https://mirror.nju.edu.cn/archlinuxcn/$arch' >> /etc/pacman.conf \
     && pacman-key --init && pacman-key --populate archlinux \
-    && pacman -Syu --noconfirm archlinuxcn-keyring && pacman-key --populate archlinuxcn \
+    && if [ "$USEMIRROR" = "1" ]; then \
+        rm -rf /usr/local/sbin/set-mirror \
+        && mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak \
+        && echo 'Server = https://mirror.nju.edu.cn/archlinux/$repo/os/$arch' > /etc/pacman.d/mirrorlist \
+        && echo '[archlinuxcn]' >> /etc/pacman.conf \
+        && echo 'Server = https://mirror.nju.edu.cn/archlinuxcn/$arch' >> /etc/pacman.conf \
+        && pacman -Syu --noconfirm archlinuxcn-keyring && pacman-key --populate archlinuxcn; \
+    fi \
     # Set locale
     && pacman -Syu --noconfirm glibc \
     && sed -i '/en_US.UTF-8/s/^#//g' /etc/locale.gen \
@@ -22,12 +28,15 @@ RUN mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak \
     && echo $TZ > /etc/timezone \
     # Install packages
     && pacman -Syu --noconfirm --needed \
-    sudo paru pacman-contrib \
+    sudo pacman-contrib \
     zsh zsh-autosuggestions zsh-syntax-highlighting \
+    && if [ "$USEMIRROR" = "1" ]; then \
+    pacman -Syu --noconfirm --needed paru \
+    && sed -i 's/^#BottomUp/BottomUp/' /etc/paru.conf; \
+    fi \
     && pacman -Scc --noconfirm \
     && paccache -rk0 \
     && rm -rf /var/cache/pacman/pkg/* \
-    && sed -i 's/^#BottomUp/BottomUp/' /etc/paru.conf \
     # Set up user
     && useradd -m -G wheel $USERNAME -s /usr/bin/zsh \
     && echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME && \

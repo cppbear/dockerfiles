@@ -2,13 +2,21 @@ FROM debian:latest
 
 ARG USERNAME=debian
 ARG DEBIAN_FRONTEND=noninteractive
+ARG USEMIRROR=0
 
 ENV TZ=Asia/Shanghai
 
-RUN sed -i.bak '/http:\/\/deb\.debian\.org\/debian$/s||http://mirror.nju.edu.cn/debian|' /etc/apt/sources.list.d/debian.sources \
+COPY set-mirror.sh /usr/local/sbin/set-mirror
+
+RUN if [ "$USEMIRROR" = "1" ]; then \
+        rm -rf /usr/local/sbin/set-mirror \
+        && sed -i.bak '/http:\/\/deb\.debian\.org\/debian$/s||http://mirror.nju.edu.cn/debian|' /etc/apt/sources.list.d/debian.sources; \
+    fi \
     && apt update -y && apt upgrade -y \
     && apt install -y ca-certificates \
-    && sed -i 's|http://mirror.nju.edu.cn|https://mirror.nju.edu.cn|g' /etc/apt/sources.list.d/debian.sources \
+    && if [ "$USEMIRROR" = "1" ]; then \
+    sed -i 's|http://mirror.nju.edu.cn|https://mirror.nju.edu.cn|g' /etc/apt/sources.list.d/debian.sources; \
+    fi \
     # Set locale
     && apt install -y locales \
     && sed -i '/en_US.UTF-8/s/^#//g' /etc/locale.gen \
