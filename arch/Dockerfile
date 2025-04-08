@@ -28,7 +28,7 @@ RUN sed -i 's/^#Color/Color/' /etc/pacman.conf \
     && echo $TZ > /etc/timezone \
     # Install packages
     && pacman -Syu --noconfirm --needed \
-    sudo pacman-contrib \
+    sudo pacman-contrib git \
     zsh zsh-autosuggestions zsh-syntax-highlighting \
     && if [ "$USEMIRROR" = "1" ]; then \
     pacman -Syu --noconfirm --needed paru \
